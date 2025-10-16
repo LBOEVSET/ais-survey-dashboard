@@ -1,0 +1,424 @@
+app:
+    name: "MFAF"
+    component-name: "mobile-data-synchronizer"
+    description: "[Example] management"
+    version: "1.0.0"
+    type: "DSB"
+    batchSize: 1000
+    isCDCMongo: true
+    maxSizeData: 10
+    maxSizeDataProfile: 1
+    jsonFilePath: 'src/file/'
+    zipFilePath: 'src/file/'
+    maxProcessTime: 30
+    dateBeforeTs : "01/09/2023"
+    crontabInteval : '0 15 * * *'
+    isActiveUser: true
+    keyNotSendInit3: ['migrated']
+    pathDecrytion: {
+      "mock_data": [
+          {
+              replacePath: "uuid"
+          },
+          {
+              condition:{
+                  path: "credential.state",
+                  value: "publicId"
+              } ,
+              replacePath: "credential.login"
+          }, 
+          {
+            condition:{
+               path: "credential.state",
+               value: "deviceId"
+            } ,
+            replacePath: "credential.login"
+          }
+      ]
+    }
+    listCollectionFilter: {
+      "agreement" : {"TORO_availableFor.myAIS" : {$in : [null,true]} }
+    }
+
+    listCollectionFilterCdc: {
+      "agreement" : {"fullDocument.TORO_availableFor.myAIS" : {$in : [null,true]} },
+    }
+
+log:
+    detail:
+        level: 'info'
+        enable-file-logging: false
+        log-file-properties:
+            dirname: 'logs/detail'
+            filename: 'detail-%DATE%'
+            date-pattern: 'YYYY-MM-DD-HH'
+            extension: '.log'
+    summary:
+        level: 'debug'
+        enable-file-logging: false
+        log-file-properties:
+            dirname: 'logs/summary'
+            filename: 'summary-%DATE%'
+            date-pattern: 'YYYY-MM-DD-HH'
+            extension: '.log'
+
+azure:
+    blobUrl: 'http://127.0.0.1:10000/devstoreaccount1'
+    account: 'devstoreaccount1'
+    accountKey: 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OU9Sgq3r3cI='
+    containerName: 'mds-azurite'
+    containerNameDataFileSync: 'mdp-i2'
+    cdnUrl: 'http://127.0.0.1:10000/devstoreaccount1'
+  
+nanoid:
+    alphanum: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    len: 11
+  
+api-services:
+    examples:
+      list-example:
+        url: https://webhook.site/658d7ea4-5d71-45fd-b03f-918d017a8ca8
+        method: 'POST'
+        timeout: 5000
+        reject-unauthorized: false
+  
+# databaseConfig : {
+#         "init2": {
+#             "mongoUrl": "mongodb+srv://lboevset:020697@cluster0.14htl1p.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+#             "CollectionMongo": ["dataFileInit2"]
+#         },
+# }
+token : {
+  jwt_expires: "${JWT_EXPIRES}",
+  jwt_secret: "${JWT_SECRET}"
+}
+
+metrics : {
+  metrics_port: "${METRICS_PORT}"
+}
+
+databaseConfig : {
+    "mongo_username": "${MONGO_USER}",
+    "mongo_password": "${MONGO_PASSWORD}",
+    "mongo_host": "${MONGO_HOST}",
+    "master": [
+      {
+        "mongoUrl": "mongodb+srv://lboevset:020697@cluster0.14htl1p.mongodb.net/master?retryWrites=true&w=majority&appName=Cluster0",
+        "listCollectionMongo": [
+          { 
+            "realmSchema": "catalog", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "catalog" 
+          },
+          { 
+            "realmSchema": "category", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "category" 
+          },
+          { 
+            "realmSchema": "lang_b", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "lang_b" 
+          },
+          { 
+            "realmSchema": "mock_data", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "mock_data" 
+          },
+          { 
+            "realmSchema": "loyaltyProgramProductSpec", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "loyaltyProgramProductSpec" 
+          },
+          { 
+            "realmSchema": "loyaltyRule", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "loyaltyRule" 
+          },
+          { 
+            "realmSchema": "loyaltyCondition", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "loyaltyCondition" 
+          },
+          { 
+            "realmSchema": "loyaltyAction", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "loyaltyAction" 
+          },
+          { 
+            "realmSchema": "loyaltyProgramPartner", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "loyaltyProgramPartner" 
+          },
+          { 
+            "realmSchema": "lang_e", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "lang_e" 
+          },
+          { 
+            "realmSchema": "lang_c", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "lang_c" 
+          },
+          { 
+            "realmSchema": "productOffering", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "productOffering" 
+          },
+          { 
+            "realmSchema": "productOfferingPrice", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "productOfferingPrice" 
+          },
+          { 
+            "realmSchema": "communicationMessageMaster", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "communicationMessageMaster" 
+          },
+          { 
+            "realmSchema": "productSpecification", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "productSpecification" 
+          },
+          { 
+            "realmSchema": "agreementSpecification", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "agreementSpecification" 
+          },
+          { 
+            "realmSchema": "agreement", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "agreement" 
+          },
+          { 
+            "realmSchema": "geographicAddressMaster", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "geographicAddressMaster" 
+          },
+          { 
+            "realmSchema": "paymentMethodMaster", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "paymentMethodMaster" 
+          },
+          { 
+            "realmSchema": "queryProductRecommendationMaster", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "queryProductRecommendationMaster" 
+          },
+          { 
+            "realmSchema": "test_query", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "test_query" 
+          },
+          { 
+            "realmSchema": "channel", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "channel" 
+          },
+          { 
+            "realmSchema": "billCycle", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "billCycle" 
+          },
+          { 
+            "realmSchema": "billingCycleSpecification", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "billingCycleSpecification" 
+          },
+          { 
+            "realmSchema": "shoppingCart", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "shoppingCart" 
+          },
+          { 
+            "realmSchema": "queryProductRecommendationMaster", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "queryProductRecommendationMaster" 
+          },
+          { 
+            "realmSchema": "geographicAddressMaster", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "geographicAddressMaster" 
+          },
+          { 
+            "realmSchema": "geographicLocationMaster", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "geographicLocationMaster" 
+          },
+          { 
+            "realmSchema": "permissionSpecification", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "permissionSpecification" 
+          },
+          { 
+            "realmSchema": "permissionSpecificationSet", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "permissionSpecificationSet" 
+          },
+          { 
+            "realmSchema": "entitySpecification", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "entitySpecification" 
+          },
+          { 
+            "realmSchema": "loyaltyEventType", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "loyaltyEventType" 
+          }
+        ],
+      }
+    ],
+    "profile": [
+      {
+        "mongoUrl": "mongodb+srv://lboevset:020697@cluster0.14htl1p.mongodb.net/profile?retryWrites=true&w=majority&appName=Cluster0",
+        "listCollectionMongo": [
+          { 
+            "realmSchema": "product", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "product" 
+          },
+          { 
+            "realmSchema": "productOrder", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "productOrder" 
+          }
+        ]
+      }
+    ],
+    "language": [
+      {
+        "mongoUrl": "mongodb+srv://lboevset:020697@cluster0.14htl1p.mongodb.net/language?retryWrites=true&w=majority&appName=Cluster0",
+        "listCollectionMongo": [
+          { 
+            "realmSchema": "test_by_tiw_language", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "test_by_tiw_language" 
+          },
+          { 
+            "realmSchema": "categoryLanguage", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "categoryLanguage" 
+          },
+          { 
+            "realmSchema": "catalogLanguage", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "catalogLanguage" 
+          },
+          { 
+            "realmSchema": "productOfferingLanguage", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "productOfferingLanguage" 
+          },
+          { 
+            "realmSchema": "productOfferingPriceLanguage", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "productOfferingPriceLanguage" 
+          },
+          { 
+            "realmSchema": "productSpecificationLanguage", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "productSpecificationLanguage" 
+          },
+          { 
+            "realmSchema": "loyaltyProgramProductSpecLanguage", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "loyaltyProgramProductSpecLanguage" 
+          },
+          { 
+            "realmSchema": "agreementLanguage", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "agreementLanguage" 
+          },
+          { 
+            "realmSchema": "agreementSpecificationLanguage", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "agreementSpecificationLanguage" 
+          },
+          { 
+            "realmSchema": "user", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "user" 
+          },
+          { 
+            "realmSchema": "loyaltyProgramProductSpecLanguage", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "loyaltyProgramProductSpecLanguage" 
+          },
+          { 
+            "realmSchema": "lang_f", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "lang_f" 
+          }
+        ]
+      }
+    ],
+    "survey": [
+      {
+        "mongoUrl": "mongodb+srv://lboevset:020697@cluster0.14htl1p.mongodb.net/survey?retryWrites=true&w=majority&appName=Cluster0",
+        "listCollectionMongo": [
+          { 
+            "realmSchema": "userRating", 
+            "tmfVersion": "v4", 
+            "supportTmfVersion": ["v3", "v4"], 
+            "collectionName": "userRating" 
+          },
+        ]
+      }
+    ],
+}
+
+environment : {
+  "zone": "local"
+}
+
+
+
+
+
+
