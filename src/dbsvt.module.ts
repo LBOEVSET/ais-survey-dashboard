@@ -1,16 +1,12 @@
 import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { DashBoardController } from './dashboard/dashboard.controller';
 import { DashBoardService } from './dashboard/dashboard.service';
 import { MetricsModule } from './prometheus/prometheus.module';
 import { TimeStampService } from './prometheus/timeStamp';
 import { UtilsService } from './utils/utils.services';
-import { MongoEncryptModule } from '@eqxjs/mongodb-encrypt-data';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DashBoardModule } from './dashboard/dashboard.module';
 import { LoggerModule } from './loggers/logger.module';
-import { ApplicationConfig } from '../assets/config/configuration';
 import { MongoConnectionService } from "./database/mongoconnection.service";
 import { AuthenticationModule } from './authentication/authentication.module';
 const appConfig = UtilsService.getAppConfig();

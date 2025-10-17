@@ -4,7 +4,7 @@ import * as winston from 'winston';
 // Default scope (singleton) — works with app.get()
 @Injectable({ scope: Scope.DEFAULT })
 export class CustomLoggerService implements LoggerService {
-  private logger: winston.Logger;
+  private readonly logger: winston.Logger;
 
   constructor() {
     this.logger = winston.createLogger({
@@ -32,7 +32,6 @@ export class CustomLoggerService implements LoggerService {
     }
 
     debug(message: any, object: object, context?: string) {
-        // this.logger.debug(message, { context });
         const logMessage = `[${context}] ${message}`;
         if (object) {
             this.logger.debug(logMessage, object, context);

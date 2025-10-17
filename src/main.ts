@@ -3,7 +3,6 @@ import { AppModule } from './app.module';
 import { ConfigService } from "@nestjs/config";
 import { ClassSerializerInterceptor, VersioningType, ValidationPipe } from "@nestjs/common";
 import { ExceptionsFilterInternalError } from "./common/filters/exception-internal-filter";
-import { ProbeInterceptor } from "./common/filters/probe.interceptor";
 import { HttpExceptionFilter } from "./common/filters/http-exception-filter";
 import { LoggerAction } from '@eqxjs/stub';
 import { CustomLoggerService } from './loggers/logger.service';
@@ -15,7 +14,6 @@ import { ApplicationConfig } from 'assets/config/configuration';
 async function bootstrap() {
   const prometheus = await NestFactory.create(MetricsModule);
   const app = await NestFactory.create(AppModule);
-  //app.useGlobalInterceptors(new ProbeInterceptor());
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalFilters(
 		new ExceptionsFilterInternalError(app.get(CustomLoggerService), LoggerAction, app.get(JwtService), app.get(ConfigService)),

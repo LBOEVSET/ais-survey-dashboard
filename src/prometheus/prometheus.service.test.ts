@@ -1,70 +1,65 @@
-import { Test, TestingModule } from '@nestjs/testing';
+// src/prometheus/prometheus.service.test.ts
+import { Test } from '@nestjs/testing';
 import { PrometheusService } from './prometheus.service';
-import { makeCounterProvider } from '@willsoto/nestjs-prometheus';
-import { Counter, register} from 'prom-client';
 import { TimeStampService } from './timeStamp';
+import { getToken } from '@willsoto/nestjs-prometheus'; // <-- important
+
+function makeCounterMock() {
+  const inc = jest.fn();
+  const self: any = { inc, labels: jest.fn(() => self) }; // chainable labels()
+  return self;
+}
 
 describe('PrometheusService', () => {
-    let service: PrometheusService;
-    let counterHTTPRequest: Counter<string>;
-    let counterHTTPResponse: Counter<string>;
-    let counterdatabaseRequest: Counter<string>;
-    let counterdatabaseResponse: Counter<string>;
+  let service: PrometheusService;
+  let httpReqCounter: any;
+  let httpResCounter: any;
+  let dbReqCounter: any;
+  let dbResCounter: any;
 
-    beforeEach(async () => {
-        register.clear()
-        counterHTTPRequest = new Counter({ name: 'http_request_counter', help: 'help' ,labelNames: ['topic', 'containerId']});
-        counterHTTPResponse = new Counter({ name: 'http_response_counter', help: 'help' ,labelNames: ['topic', 'containerId']});
-        counterdatabaseRequest = new Counter({ name: 'database_request_counter', help: 'help' ,labelNames: ['topic', 'containerId']});
-        counterdatabaseResponse = new Counter({ name: 'database_response_counter', help: 'help' ,labelNames: ['topic', 'containerId']});
+  beforeEach(async () => {
+    httpReqCounter = makeCounterMock();
+    httpResCounter = makeCounterMock();
+    dbReqCounter = makeCounterMock();
+    dbResCounter = makeCounterMock();
 
-        const module: TestingModule = await Test.createTestingModule({
-            providers: [
-                PrometheusService,
-                TimeStampService,
-                makeCounterProvider({ name: 'http_request_counter', help: 'help' }),
-                makeCounterProvider({ name: 'http_response_counter', help: 'help' }),
-                makeCounterProvider({ name: 'database_request_counter', help: 'help' }),
-                makeCounterProvider({ name: 'database_response_counter', help: 'help' }),
-            ],
-        }).compile();
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        PrometheusService,
+        { provide: TimeStampService, useValue: { now: () => new Date() } },
 
-        service = module.get<PrometheusService>(PrometheusService);
-    });
+        // ✅ provide mocks using the correct tokens
+        { provide: getToken('http_request_counter'), useValue: httpReqCounter },
+        { provide: getToken('http_response_counter'), useValue: httpResCounter },
+        { provide: getToken('database_request_counter'), useValue: dbReqCounter },
+        { provide: getToken('database_response_counter'), useValue: dbResCounter },
+      ],
+    }).compile();
 
-    it('should be defined', () => {
-        expect(service).toBeDefined();
-    });
+    service = moduleRef.get(PrometheusService);
+  });
 
-    it('should increment http_request_counter on httpRequest', () => {
-        const node = 'test-node';
-        const cmd = 'test-cmd';
-        const method = 'GET';
-        service.httpRequest(node, cmd, method);
-        expect(counterHTTPRequest.labels(node, cmd, method, 'INTERNAL_OS_NAME').inc).toHaveBeenCalled();
-    });
+  it('should increment http_request_counter on httpRequest', () => {
+    service.httpRequest('api', 'listUsers', 'GET');
+    expect(httpReqCounter.labels).toHaveBeenCalledWith('api', 'listUsers', 'GET', expect.any(String));
+    expect(httpReqCounter.inc).toHaveBeenCalled();
+  });
 
-    it('should increment http_response_counter on httpResponse', () => {
-        const node = 'test-node';
-        const cmd = 'test-cmd';
-        const httpstatus = '200';
-        const code = '0';
-        service.httpResponse(node, cmd, httpstatus, code);
-        expect(counterHTTPResponse.labels(node, cmd, httpstatus, code, 'INTERNAL_OS_NAME').inc).toHaveBeenCalled();
-    });
+  it('should increment http_response_counter on httpResponse', () => {
+    service.httpResponse('api', 'listUsers', '200', 'OK');
+    expect(httpResCounter.labels).toHaveBeenCalledWith('api', 'listUsers', '200', 'OK', expect.any(String));
+    expect(httpResCounter.inc).toHaveBeenCalled();
+  });
 
-    it('should increment database_request_counter on databaseRequest', () => {
-        const operation = 'find';
-        const collectionName = 'test-collection';
-        service.databaseRequest(operation, collectionName);
-        expect(counterdatabaseRequest.labels(operation, collectionName, 'INTERNAL_OS_NAME').inc).toHaveBeenCalled();
-    });
+  it('should increment database_request_counter on databaseRequest', () => {
+    service.databaseRequest('find', 'users');
+    expect(dbReqCounter.labels).toHaveBeenCalledWith('find', 'users', expect.any(String));
+    expect(dbReqCounter.inc).toHaveBeenCalled();
+  });
 
-    it('should increment database_response_counter on databaseResponse', () => {
-        const operation = 'find';
-        const collectionName = 'test-collection';
-        const code = '0';
-        service.databaseResponse(operation, collectionName, code);
-        expect(counterdatabaseResponse.labels(operation, collectionName, code, 'INTERNAL_OS_NAME').inc).toHaveBeenCalled();
-    });
+  it('should increment database_response_counter on databaseResponse', () => {
+    service.databaseResponse('find', 'users', '0');
+    expect(dbResCounter.labels).toHaveBeenCalledWith('find', 'users', '0', expect.any(String));
+    expect(dbResCounter.inc).toHaveBeenCalled();
+  });
 });

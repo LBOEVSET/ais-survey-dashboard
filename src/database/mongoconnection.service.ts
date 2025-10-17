@@ -8,7 +8,7 @@ import { UtilsService } from '../utils/utils.services';
 @Injectable()
 export class MongoConnectionService implements OnModuleInit {
   private connections: Record<string, Connection> = {};
-  private readyPromise: Promise<void>;
+  private readonly readyPromise: Promise<void>;
   private readyResolve!: () => void;
 
   // only these keys in databaseConfig should become mongoose connections
@@ -35,7 +35,6 @@ export class MongoConnectionService implements OnModuleInit {
     }
 
     this.readyResolve();
-    // console.log('✅ All MongoDB connections registered successfully');
   }
 
   private async registerConnection(connectionName: string) {
@@ -49,9 +48,7 @@ export class MongoConnectionService implements OnModuleInit {
       }
 
       this.connections[connectionName] = connection;
-      // console.log(`✅ Connected to MongoDB: ${connectionName}`);
     } catch (err) {
-      // console.error(`❌ Failed to connect to MongoDB: ${connectionName}`, err);
       throw new InternalServerError(
         `Failed to connect to MongoDB with connection name ${connectionName}`,
       );

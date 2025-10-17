@@ -17,7 +17,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 		const response = ctx.getResponse<Response>();
 		const request = ctx.getRequest();
 		const authHeader = request.headers['authorization']; 
-		const token = authHeader?.replace('Bearer ', '');
+		const token = authHeader?.replaceAll('Bearer ', '');
 		let statusCode = exception.getStatus();
 		const extResponse = exception.getResponse() as {
 			message: ValidationError[];

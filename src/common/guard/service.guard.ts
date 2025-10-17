@@ -3,8 +3,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 @Injectable()
 export class ServiceGuard implements CanActivate {
   canActivate(ctx: ExecutionContext): boolean {
-    const req = ctx.switchToHttp().getRequest();
-    const accessToken = req.header('access_token');
+    const accessToken = ctx.switchToHttp().getRequest().header('access_token');
     
     if (!accessToken) {
       throw new UnauthorizedException('Missing accessToken');
@@ -16,8 +15,6 @@ export class ServiceGuard implements CanActivate {
 @Injectable()
 export class AuthenticationGuard implements CanActivate {
   canActivate(ctx: ExecutionContext): boolean {
-    const req = ctx.switchToHttp().getRequest();
-    
     return true;
   }
 }

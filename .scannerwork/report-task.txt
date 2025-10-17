@@ -1,0 +1,6 @@
+projectKey=ais-survey-dashboard
+serverUrl=http://localhost:9000
+serverVersion=25.10.0.114319
+dashboardUrl=http://localhost:9000/dashboard?id=ais-survey-dashboard
+ceTaskId=f717d905-06eb-45e1-91c8-c5ab007edd3e
+ceTaskUrl=http://localhost:9000/api/ce/task?id=f717d905-06eb-45e1-91c8-c5ab007edd3e

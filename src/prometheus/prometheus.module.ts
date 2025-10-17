@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import {
   PrometheusModule,
   makeCounterProvider,
-  makeGaugeProvider,
-  makeHistogramProvider,
 } from '@willsoto/nestjs-prometheus';
 import { PrometheusService } from './prometheus.service';
 import { TimeStampService } from './timeStamp';

@@ -1,9 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { DashBoardController } from './dashboard.controller';
-import { DashBoardService } from './dashboard.service';
-import { DashBoardDto } from "./dtos";
-import { HttpStatus } from '@nestjs/common';
-import { DashBoardResponse } from "./types";
+import { Test } from '@nestjs/testing';
+import { DashBoardController } from '../../src/dashboard/dashboard.controller';
+import { DashBoardService } from '../../src/dashboard/dashboard.service';
+import { DashBoardDto } from "../../src/dashboard/dtos";
 
 describe('DashBoardController', () => {
   let controller: DashBoardController;
@@ -34,29 +32,29 @@ describe('DashBoardController', () => {
       hasNextPage: false
     }
     it('findAll returns paginated data (page=1, limit=1)', async () => {
-      const dto: DashBoardDto = { page: 1, limit: 1, service: undefined };
+      const dto: DashBoardDto = { page: 1, limit: 10, month: 1, service: undefined };
 
-      const result = await controller.findAll(dto);
+      const result = await controller.findAll(dto.page, dto.limit, dto);
 
-      expect(serviceMock.getUserRating).toHaveBeenCalledWith(dto);
+      expect(serviceMock.getUserRating).toHaveBeenCalledWith(dto, dto.page, dto.limit);
       expect(result).toEqual(expect.objectContaining(mock_result));
     });
 
     it('findAll returns paginated data (page=2, limit=1)', async () => {
-      const dto: DashBoardDto = { page: 2, limit: 1, service: undefined };
+      const dto: DashBoardDto = { page: 2, limit: 10, month: 1, service: undefined };
 
-      const result = await controller.findAll(dto);
+      const result = await controller.findAll(dto.page, dto.limit, dto);
 
-      expect(serviceMock.getUserRating).toHaveBeenCalledWith(dto);
+      expect(serviceMock.getUserRating).toHaveBeenCalledWith(dto, dto.page, dto.limit);
       expect(result).toEqual(expect.objectContaining(mock_result));
     });
 
     it('findAll returns paginated data (page=1, limit=20)', async () => {
-      const dto: DashBoardDto = { page: 1, limit: 20, service: undefined };
+      const dto: DashBoardDto = { page: 1, limit: 20, month: 1, service: undefined };
 
-      const result = await controller.findAll(dto);
+      const result = await controller.findAll(dto.page, dto.limit, dto);
 
-      expect(serviceMock.getUserRating).toHaveBeenCalledWith(dto);
+      expect(serviceMock.getUserRating).toHaveBeenCalledWith(dto, dto.page, dto.limit);
       expect(result).toEqual(expect.objectContaining(mock_result));
     });
   });

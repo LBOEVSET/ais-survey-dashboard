@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, HttpStatus, Query, Body, Param, Post } from "@nestjs/common";
+import { Controller, Get, HttpCode, HttpStatus, Query, DefaultValuePipe, ParseIntPipe } from "@nestjs/common";
 import { DashBoardService } from "./dashboard.service";
 import { Public } from "../common/decorators";
 import { AlertType, DefaultResult } from "../common/types";
@@ -17,14 +17,14 @@ export class DashBoardController {
 	@Get("")
 	@HttpCode(HttpStatus.OK)
 	async findAll(
+		@Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+		@Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
 		@Query()
 		query: DashBoardDto,
 	): Promise<DefaultResult<DashBoardResponse>> {
-		const page = query?.page ?? 1;
-		let limit = query?.limit ?? 10;
 		return infinityPagination(
 			HttpStatus.OK,
-			await this.projectsService.getUserRating(query),
+			await this.projectsService.getUserRating(query, page, limit),
 			{ page, limit },
 			{
 				type: AlertType.success,

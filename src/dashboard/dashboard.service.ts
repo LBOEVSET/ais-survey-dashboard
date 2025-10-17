@@ -1,9 +1,6 @@
-import { InjectConnection } from '@nestjs/mongoose';
-import { Connection } from "mongoose";
-import { CustomLoggerService, LoggerAction, DBActionEnum, CustomSingletonLoggerService, ApplicationInsightsService, LoggerActionEnum, EncryptionService } from "@eqxjs/stub";
+import { CustomLoggerService, LoggerAction, DBActionEnum, ApplicationInsightsService, LoggerActionEnum } from "@eqxjs/stub";
 import { UtilsService } from "../utils/utils.services";
 import { PrometheusService } from '../prometheus/prometheus.service';
-import { ObjectId } from "mongodb";
 import { MongoConnectionService } from '../database/mongoconnection.service';
 import { DashBoardResponse } from "./types";
 import { Injectable, Scope } from '@nestjs/common';
@@ -22,44 +19,39 @@ export enum databaseOperations {
   delete = 'delete',
 }
 
-let databaseConfig
-let appConfig
-let azureConfig
+let databaseConfig;
+let appConfig;
 @Injectable({ scope: Scope.REQUEST }) 
 export class DashBoardService {
   constructor(
     private readonly mongoService: MongoConnectionService,
-    private singletonLogger: CustomSingletonLoggerService,
-    private customPrometheusService: PrometheusService,
-    private logger: CustomLoggerService,
-    private appInsights: ApplicationInsightsService,
-    private encryptionService: EncryptionService,
+    private readonly customPrometheusService: PrometheusService,
+    private readonly logger: CustomLoggerService,
+    private readonly appInsights: ApplicationInsightsService,
     // @InjectConnection('datasync') private datasync: Connection
   ) {
     databaseConfig = UtilsService.getDBConfig()
     appConfig = UtilsService.getAppConfig()
   }
 
-  async getUserRating(data: DashBoardDto): Promise<DashBoardResponse[]> {
+  async getUserRating(data: DashBoardDto, page: number, limit: number): Promise<DashBoardResponse[]> {
     let queryts;
     const userRatingCollectionName: string = databaseConfig.survey[0].listCollectionMongo.collectionName;
     const mainMongoConnection = this.mongoService.getConnection(`survey`);
-    const init2MongoConnection = this.mongoService.getConnection(userRatingCollectionName);
     let start = performance.now();
     const startDate = dayjs().tz('Asia/Bangkok').startOf('month').toDate();
-    const endDate   = dayjs(startDate).add(1, 'month').toDate();
+    const endDate   = dayjs(startDate).add(data.month, 'month').toDate();
     const query = { ts: { $gte: startDate, $lt: endDate } };
-    const skip = (data.page - 1) * data.limit;
+    const skip = (page - 1) * limit;
     try{
         queryts = await mainMongoConnection
             .collection(userRatingCollectionName)
-            .find(
-                query, 
-                { sort: { ts: -1 } }
-            )
+            .find(query)
+            .sort({ ts: -1 })
             .skip(skip)
-            .limit(data.limit)
+            .limit(limit)
             .toArray();
+            
         let end = performance.now();
         this.customPrometheusService.databaseResponse(
             databaseOperations.read,
@@ -83,9 +75,9 @@ export class DashBoardService {
             duration: end - start,
             resultCode: 50002,
             success: true,
-            dependencyTypeName: mainMongoConnection?.db?.namespace ?? ''
+            dependencyTypeName: mainMongoConnection?.db?.namespace
         })
-        
+        console.error('[logger fallback]', error, '\n[payload]', query, '\n[stack]\n', error.stack);
         return [];
     }
   }

@@ -1,13 +1,10 @@
-import { join } from 'path';
-import { readFileSync } from 'fs';
+import { join } from 'node:path';
+import { readFileSync } from 'node:fs';
 import * as yaml from 'js-yaml';
-import { ConfigModule } from '@nestjs/config';
 import { ApplicationConfig } from '../../assets/config/configuration';
 
 export class UtilsService {
-    
-    constructor() { }
-    
+
     static getDBConfig() {
         let databaseConfig = ApplicationConfig.databaseConfig;
         

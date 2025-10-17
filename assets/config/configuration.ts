@@ -1,10 +1,10 @@
 import 'dotenv/config';
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import * as yaml from 'js-yaml';
-import { join } from 'path';
+import { join } from 'node:path';
 
 function expandEnv(input: string, { strict = false } = {}) {
-  return input.replace(/\$\{([\w.-]+)(?::-(.*?))?\}/g, (_m, name, def) => {
+  return input.replaceAll(/\$\{([\w.-]+)(?::-(.*?))?\}/g, (_m, name, def) => {
     const val = process.env[name];
     if (val !== undefined && val !== null && val !== '') return String(val);
     if (def !== undefined) return def;                // supports ${FOO:-default}

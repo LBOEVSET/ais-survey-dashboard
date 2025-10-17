@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { UserRatingModule } from './database/userrating.module';
 import { DBSVTModule } from './dbsvt.module';
-import { join } from 'path';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { join } from 'node:path';
 import { ConfigService } from '@nestjs/config';
-import { AppInterceptor, FrameworkModule } from '@eqxjs/stub';
+import { FrameworkModule } from '@eqxjs/stub';
 import { MetricsModule } from './prometheus/prometheus.module';
 import { LoggerModule } from './loggers/logger.module';
 import { JwtModule } from '@nestjs/jwt';
@@ -39,7 +38,7 @@ import { AuthenticationModule } from './authentication/authentication.module';
   ],
 })
 export class AppModule {
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
   // console.log("ZONE",process.env)
   }
 }

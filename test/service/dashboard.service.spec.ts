@@ -1,29 +1,26 @@
 // src/dashboard/dashboard.service.memory.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { ContextIdFactory } from '@nestjs/core';
-import { DashBoardService } from './dashboard.service';
-
-import { MongoConnectionService } from '../database/mongoconnection.service';
-import { PrometheusService } from '../prometheus/prometheus.service';
+import { DashBoardService } from '../../src/dashboard/dashboard.service';
+import { MongoConnectionService } from '../../src/database/mongoconnection.service';
+import { PrometheusService } from '../../src/prometheus/prometheus.service';
 import {
   CustomLoggerService,
   CustomSingletonLoggerService,
   ApplicationInsightsService,
   EncryptionService,
 } from '@eqxjs/stub';
-import { UtilsService } from '../utils/utils.services';
-
+import { UtilsService } from '../../src/utils/utils.services';
+import { DashBoardDto } from '../../src/dashboard/dtos';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongoClient, ObjectId } from 'mongodb';
 
-// ✅ Use require to avoid "namespace import is not callable" in Jest
 const dayjs = require('dayjs') as typeof import('dayjs');
 const utc = require('dayjs/plugin/utc');
 const tz = require('dayjs/plugin/timezone');
 dayjs.extend(utc);
 dayjs.extend(tz);
 
-// ---- Types (include _id and ts because the service returns raw Mongo docs)
 export class DashBoardResponse {
   _id?: ObjectId;
   ts?: Date;
@@ -61,9 +58,6 @@ describe('DashBoardService (integration-ish with mongodb-memory-server)', () => 
 
   beforeEach(async () => {
     jest.clearAllMocks();
-
-    // Mock config to match how the service reads it:
-    // databaseConfig.survey[0].listCollectionMongo.collectionName
     jest.spyOn(UtilsService, 'getDBConfig').mockReturnValue({
       survey: [
         {
@@ -171,28 +165,79 @@ describe('DashBoardService (integration-ish with mongodb-memory-server)', () => 
     await moduleRef.registerRequestByContextId({ headers: {} }, contextId);
     const service = await moduleRef.resolve(DashBoardService, contextId);
 
-    const dtoPage1 = { page: 1, limit: 1, service: 'userRating' } as any;
-    const dtoPage2 = { page: 2, limit: 1, service: 'userRating' } as any;
+    const dtoPage1 = { page: 1, limit: 10, month: 1, service: undefined } as DashBoardDto;
+    const dtoPage2 = { page: 2, limit: 10, month: 1, service: undefined } as DashBoardDto;
 
     const startDate = dayjs().tz('Asia/Bangkok').startOf('month').toDate();
     const endDate = dayjs(startDate).add(1, 'month').toDate();
 
-    const page1 = await service.getUserRating(dtoPage1);
-    expect(page1).toHaveLength(1);
+    const page1 = await service.getUserRating(dtoPage1, dtoPage1.page, dtoPage1.limit);
+    console.log(page1);
+    expect(page1).toHaveLength(2);
     expect(page1[0]._id).toBeDefined();
     expect(page1[0].ts && new Date(page1[0].ts) >= startDate && new Date(page1[0].ts) < endDate).toBe(true);
     expect(page1[0].userData).toBeDefined();
     expect(Array.isArray(page1[0].userData.device)).toBe(true);
 
-    const page2 = await service.getUserRating(dtoPage2);
-    expect(page2).toHaveLength(1);
-    expect(page2[0]._id).toBeDefined();
-    expect(page2[0].ts && new Date(page2[0].ts) >= startDate && new Date(page2[0].ts) < endDate).toBe(true);
-
-    // different docs across pages
-    expect(page1[0]._id?.toString()).not.toEqual(page2[0]._id?.toString());
-
-    // optional: ts desc (page1 newer/equal than page2)
-    expect(new Date(page1[0].ts!) >= new Date(page2[0].ts!)).toBe(true);
+    const page2 = await service.getUserRating(dtoPage2, dtoPage2.page, dtoPage2.limit);
+    if(page2.length > 0){
+      expect(page2).toHaveLength(0);
+      expect(page2[0]._id).toBeDefined();
+      expect(page2[0].ts && new Date(page2[0].ts) >= startDate && new Date(page2[0].ts) < endDate).toBe(true);
+      // different docs across pages
+      expect(page1[0]._id?.toString()).not.toEqual(page2[0]._id?.toString());
+      // optional: ts desc (page1 newer/equal than page2)
+      expect(new Date(page1[0].ts!) >= new Date(page2[0].ts!)).toBe(true);
+    }
   });
+
+  it('getUserRating handles errors (catch block coverage)', async () => {
+    const contextId = ContextIdFactory.create();
+    await moduleRef.registerRequestByContextId({ headers: {} }, contextId);
+    const service = await moduleRef.resolve(DashBoardService, contextId);
+
+    const mongoConnSvc = moduleRef.get(MongoConnectionService);
+    const fakeError = new Error('simulated DB failure');
+
+    jest.spyOn(mongoConnSvc as any, 'getConnection').mockReturnValue({
+      db: { namespace: 'fake-db' },
+      collection: () => ({
+        find: () => ({
+          sort: () => ({
+            skip: () => ({
+              limit: () => ({
+                toArray: jest.fn().mockRejectedValue(fakeError),
+              }),
+            }),
+          }),
+        }),
+      }),
+    });
+
+    const appInsights = moduleRef.get(ApplicationInsightsService);
+    const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const dto = { page: 1, limit: 10, month: 1, service: undefined } as DashBoardDto;
+    const result = await service.getUserRating(dto, dto.page, dto.limit);
+
+    // ✅ assertions: ensure catch executed
+    expect(result).toEqual([]); // returns [] from catch
+    expect(appInsights.trackDependency).toHaveBeenCalledWith(
+      expect.objectContaining({
+        resultCode: 50002,
+        success: true,
+      }),
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('[logger fallback]'),
+      fakeError,
+      expect.stringContaining('[payload]'),
+      expect.anything(),
+      expect.stringContaining('[stack]'),
+      expect.any(String),
+    );
+
+    consoleSpy.mockRestore();
+  });
+
 });

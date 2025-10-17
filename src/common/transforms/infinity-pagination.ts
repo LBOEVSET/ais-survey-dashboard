@@ -1,4 +1,4 @@
-import { AlertResponse, IPaginationOptions, InfinityPaginationResultType, InfinityPaginationResultWithTotalType, MystockPaginationResultType, MystockListResponse, MarketplaceListResponse, MarketplacePaginationResultType, CreditResponse ,CreditPaginationResultType, NotifyMePaginationResultType, NotifyMeListResponse } from "../types";
+import { AlertResponse, IPaginationOptions, InfinityPaginationResultType, InfinityPaginationResultWithTotalType } from "../types";
 
 export const infinityPagination = <T>(
   status_code: number,

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthenticationService } from './authentication.service';
 import { AuthenticationController } from './authentication.controller';
 
@@ -9,6 +9,7 @@ import { AuthenticationController } from './authentication.controller';
       secret: process.env.JWT_SECRET ?? 'svtdb_ais_secret',
       signOptions: { expiresIn: process.env.JWT_EXPIRES ?? '30d' },
     }),
+    JwtService
   ],
   controllers: [AuthenticationController],
   providers: [AuthenticationService],

@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
 import { DashBoardModule } from '../src/dashboard/dashboard.module';
+import { AuthenticationModule } from '../src/authentication/authentication.module';
 import { UserRatingModule } from '../src/database/userrating.module';
-import request from 'supertest';
-import { DeepMocked, createMock } from '@golevelup/ts-jest';
-import { AppModule } from './../src/app.module';
+import { DeepMocked } from '@golevelup/ts-jest';
 import * as path from 'path';
-import * as fs from 'fs'; 
-import { join } from 'path';
+import * as fs from 'fs';
+import { join } from 'node:path';
 import { UtilsService } from '../src/utils/utils.services';
 import { CustomLoggerService, CustomSummaryLoggerService, FrameworkModule, MessageContextService, CustomAxiosService, LoggerHelperService, INTERNAL_LOGGER_OPTIONS, INTERNAL_OS_NAME } from '@eqxjs/stub';
 
@@ -42,7 +40,8 @@ describe('AppController (e2e)', () => {
           zone: 'local'
         }),
         UserRatingModule,
-        DashBoardModule
+        DashBoardModule,
+        AuthenticationModule
       ],
       providers: [
         CustomLoggerService,
@@ -65,7 +64,6 @@ describe('AppController (e2e)', () => {
       const message_db = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'test', 'data-mockup', '_example-db.json'), { encoding: 'utf-8' }))
       initFlow(detialLogger, messageContextService, message)
       jest.spyOn(customAxiosService, 'request').mockResolvedValueOnce(message_anti)
-      // jest.spyOn(exampleRepo, "create").mockResolvedValueOnce(message_db)
 
     });
   });
